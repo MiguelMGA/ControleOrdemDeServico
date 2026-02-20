@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OsService.Domain.Entities
+﻿namespace OsService.Domain.Entities
 {
     public class CustomerEntity
     {

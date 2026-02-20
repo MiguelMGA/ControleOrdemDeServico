@@ -1,6 +1,5 @@
 using OsService.Infrastructure.Databases;
 using OsService.Infrastructure.Repository;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 

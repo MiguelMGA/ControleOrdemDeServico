@@ -1,9 +1,6 @@
-﻿using OsService.Domain.Entities;
+﻿using Dapper;
+using OsService.Domain.Entities;
 using OsService.Infrastructure.Databases;
-using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OsService.Infrastructure.Repository;
 
