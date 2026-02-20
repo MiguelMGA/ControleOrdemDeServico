@@ -1,11 +1,8 @@
 ﻿using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OsService.Infrastructure.Databases;
 
-public class DatabaseGenerantor(IAdminSqlConnectionFactory factory, IDefaultSqlConnectionFactory dc) 
+public class DatabaseGenerantor(IAdminSqlConnectionFactory factory, IDefaultSqlConnectionFactory dc)
 {
     private const string CreateDbSql = @"
 IF DB_ID(N'OsServiceDb') IS NULL

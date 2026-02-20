@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   rabbitmq:
@@ -43,8 +41,8 @@ services:
 
   osservices.apiservice:
     build:
-      context: ../ControleOrdemDeServico.ApiService
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: ControleOrdemDeServico.ApiService/Dockerfile
     container_name: osservices-api
     depends_on:
       rabbitmq:
