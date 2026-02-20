@@ -1,7 +1,7 @@
-﻿using OsService.Domain.Entities;
+﻿using Dapper;
+using OsService.Domain.Entities;
 using OsService.Domain.Enums;
 using OsService.Infrastructure.Databases;
-using Dapper;
 
 namespace OsService.Infrastructure.Repository;
 
