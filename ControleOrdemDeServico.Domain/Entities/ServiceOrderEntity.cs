@@ -7,7 +7,7 @@ namespace OsService.Domain.Entities;
 public sealed class ServiceOrderEntity
 {
     public Guid Id { get; }
-    public int Number { get; }
+    public int Number { get; private set; }
     public Guid CustomerId { get; }
     public string Description { get; private set; }
     public ServiceOrderStatus Status { get; private set; }
@@ -25,8 +25,7 @@ public sealed class ServiceOrderEntity
         if (customerId == Guid.Empty)
             throw new DomainException("CustomerId não pode estar vazio.");
 
-        if (string.IsNullOrWhiteSpace(description))
-            throw new DomainException("A descrição é obrigatória.");
+        ValidateDescription(description);
 
         Id = id;
         Number = number;
@@ -35,6 +34,15 @@ public sealed class ServiceOrderEntity
         Status = ServiceOrderStatus.Open;
         OpenedAt = DateTime.UtcNow;
         Currency = Currency.Create("BRL");
+    }
+
+    private static void ValidateDescription(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new DomainException("A descrição é obrigatória.");
+
+        if (description.Length > 500)
+            throw new DomainException("A descrição deve ter no máximo 500 caracteres.");
     }
 
     public static ServiceOrderEntity Create(
