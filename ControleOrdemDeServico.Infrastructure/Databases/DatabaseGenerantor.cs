@@ -53,7 +53,7 @@ END;
 
         await conn.ExecuteAsync(new CommandDefinition(CreateDbSql, cancellationToken: ct));
 
-        var conDefault = dc.Create();
+        using var conDefault = dc.Create();
         await conDefault.ExecuteAsync(new CommandDefinition(CreateTablesSql, cancellationToken: ct));
     }
 

@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using OsService.Domain.Entities;
-using OsService.Domain.Enums;
 using OsService.Infrastructure.Repository;
 
 namespace OsService.Services.V1.OpenServiceOrder;
@@ -19,10 +18,7 @@ public sealed class OpenServiceOrderHandler(
         if (!exists)
             throw new KeyNotFoundException("Customer não encontrado.");
 
-        var nextNumber = await serviceOrders.GetNextNumberAsync(cancellationToken);
-
         var serviceOrder = ServiceOrderEntity.Create(
-            nextNumber,
             request.CustomerId,
             request.Description);
 

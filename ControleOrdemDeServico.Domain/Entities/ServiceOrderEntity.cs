@@ -7,18 +7,17 @@ namespace OsService.Domain.Entities;
 public sealed class ServiceOrderEntity
 {
     public Guid Id { get; }
-    public int Number { get; private set; }
+    public int Number { get; internal set; }
     public Guid CustomerId { get; }
     public string Description { get; private set; }
     public ServiceOrderStatus Status { get; private set; }
-    public DateTime OpenedAt { get; }
+    public DateTime OpenedAt { get; internal set; }
     public decimal? Price { get; private set; }
     public Currency Currency { get; private set; }
     public DateTime? UpdatedPriceAt { get; private set; }
 
     private ServiceOrderEntity(
         Guid id,
-        int number,
         Guid customerId,
         string description)
     {
@@ -28,7 +27,6 @@ public sealed class ServiceOrderEntity
         ValidateDescription(description);
 
         Id = id;
-        Number = number;
         CustomerId = customerId;
         Description = description.Trim();
         Status = ServiceOrderStatus.Open;
@@ -36,25 +34,36 @@ public sealed class ServiceOrderEntity
         Currency = Currency.Create("BRL");
     }
 
-    private static void ValidateDescription(string description)
-    {
-        if (string.IsNullOrWhiteSpace(description))
-            throw new DomainException("A descrição é obrigatória.");
-
-        if (description.Length > 500)
-            throw new DomainException("A descrição deve ter no máximo 500 caracteres.");
-    }
-
     public static ServiceOrderEntity Create(
-        int number,
         Guid customerId,
         string description)
     {
         return new ServiceOrderEntity(
             Guid.NewGuid(),
-            number,
             customerId,
             description);
+    }
+
+    public static ServiceOrderEntity Restore(Snapshot snapshot)
+    {
+        var entity = new ServiceOrderEntity(
+            snapshot.Id,
+            snapshot.CustomerId,
+            snapshot.Description);
+
+        entity.Number = snapshot.Number;
+        entity.Status = snapshot.Status;
+        entity.OpenedAt = snapshot.OpenedAt;
+        entity.Price = snapshot.Price;
+        entity.Currency = Currency.Create(snapshot.CurrencyCode);
+        entity.UpdatedPriceAt = snapshot.UpdatedPriceAt;
+
+        return entity;
+    }
+
+    internal void SetNumber(int number)
+    {
+        Number = number;
     }
 
     public void Start()
@@ -96,4 +105,24 @@ public sealed class ServiceOrderEntity
 
         Status = newStatus;
     }
+
+    private static void ValidateDescription(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            throw new DomainException("A descrição é obrigatória.");
+
+        if (description.Length > 500)
+            throw new DomainException("A descrição deve ter no máximo 500 caracteres.");
+    }
+
+    public sealed record Snapshot(
+    Guid Id,
+    int Number,
+    Guid CustomerId,
+    string Description,
+    ServiceOrderStatus Status,
+    DateTime OpenedAt,
+    decimal? Price,
+    string CurrencyCode,
+    DateTime? UpdatedPriceAt);
 }
