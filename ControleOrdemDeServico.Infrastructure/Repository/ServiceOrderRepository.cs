@@ -43,6 +43,8 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
                    Description,
                    Status,
                    OpenedAt,
+                   StartedAt,
+                   FinishedAt,
                    Price,
                    Coin,
                    UpdatedPriceAt
@@ -65,6 +67,8 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
                 row.Description,
                 (ServiceOrderStatus)row.Status,
                 row.OpenedAt,
+                row.StartedAt,
+                row.FinishedAt,
                 row.Price,
                 row.Coin,
                 row.UpdatedPriceAt

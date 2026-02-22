@@ -1,4 +1,5 @@
 using OsService.Infrastructure.Databases;
+using OsService.Infrastructure.Logging;
 using OsService.Infrastructure.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +20,8 @@ builder.Services.AddSingleton<IAdminSqlConnectionFactory>(_ =>
 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IServiceOrderRepository, ServiceOrderRepository>();
-builder.Services.AddSingleton<DatabaseGenerantor>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddSingleton<DatabaseGenerator>();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
@@ -31,7 +33,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var repository =
-        scope.ServiceProvider.GetRequiredService<DatabaseGenerantor>();
+        scope.ServiceProvider.GetRequiredService<DatabaseGenerator>();
 
     await repository.EnsureCreatedAsync(CancellationToken.None);
 

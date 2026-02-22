@@ -4,13 +4,6 @@ namespace OsService.Domain.ValueObjects;
 
 public sealed class Currency
 {
-    private static readonly HashSet<string> Allowed =
-    [
-        "BRL",
-        "USD",
-        "EUR"
-    ];
-
     public string Code { get; }
 
     private Currency(string code)
@@ -20,15 +13,10 @@ public sealed class Currency
 
     public static Currency Create(string code)
     {
-        if (string.IsNullOrWhiteSpace(code))
-            throw new DomainException("Currency cannot be empty.");
+        if (!string.Equals(code, "BRL", StringComparison.OrdinalIgnoreCase))
+            throw new DomainException("A única moeda suportada é BRL.");
 
-        code = code.ToUpperInvariant();
-
-        if (!Allowed.Contains(code))
-            throw new DomainException($"Currency '{code}' is not supported.");
-
-        return new Currency(code);
+        return new Currency("BRL");
     }
 
     public override string ToString() => Code;

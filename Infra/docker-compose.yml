@@ -24,7 +24,7 @@ services:
     container_name: sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "SqlServer2024!Strong#"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD}"
       MSSQL_PID: "Developer"
     ports:
       - "1433:1433"
@@ -51,8 +51,23 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=OsServiceDb;User Id=sa;Password=SqlServer2024!Strong#;TrustServerCertificate=True;Encrypt=False;"
-      ConnectionStrings__CreateTable: "Server=sqlserver,1433;Database=master;User Id=sa;Password=SqlServer2024!Strong#;TrustServerCertificate=True;Encrypt=False;"
+
+      ConnectionStrings__DefaultConnection: >
+        Server=${DB_HOST};
+        Database=${DB_NAME};
+        User Id=sa;
+        Password=${SA_PASSWORD};
+        TrustServerCertificate=True;
+        Encrypt=False;
+
+      ConnectionStrings__CreateTable: >
+        Server=${DB_HOST};
+        Database=master;
+        User Id=sa;
+        Password=${SA_PASSWORD};
+        TrustServerCertificate=True;
+        Encrypt=False;
+
     ports:
       - "5000:8080"
     networks:

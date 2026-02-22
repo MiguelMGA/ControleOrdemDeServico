@@ -11,7 +11,11 @@ public sealed class ServiceOrderEntity
     public Guid CustomerId { get; }
     public string Description { get; private set; }
     public ServiceOrderStatus Status { get; private set; }
+
     public DateTime OpenedAt { get; internal set; }
+    public DateTime? StartedAt { get; private set; }
+    public DateTime? FinishedAt { get; private set; }
+
     public decimal? Price { get; private set; }
     public Currency Currency { get; private set; }
     public DateTime? UpdatedPriceAt { get; private set; }
@@ -19,7 +23,8 @@ public sealed class ServiceOrderEntity
     private ServiceOrderEntity(
         Guid id,
         Guid customerId,
-        string description)
+        string description,
+        DateTime openedAt)
     {
         if (customerId == Guid.Empty)
             throw new DomainException("CustomerId não pode estar vazio.");
@@ -29,8 +34,10 @@ public sealed class ServiceOrderEntity
         Id = id;
         CustomerId = customerId;
         Description = description.Trim();
+
         Status = ServiceOrderStatus.Open;
-        OpenedAt = DateTime.UtcNow;
+        OpenedAt = openedAt;
+
         Currency = Currency.Create("BRL");
     }
 
@@ -41,7 +48,8 @@ public sealed class ServiceOrderEntity
         return new ServiceOrderEntity(
             Guid.NewGuid(),
             customerId,
-            description);
+            description,
+            DateTime.UtcNow);
     }
 
     public static ServiceOrderEntity Restore(Snapshot snapshot)
@@ -49,11 +57,13 @@ public sealed class ServiceOrderEntity
         var entity = new ServiceOrderEntity(
             snapshot.Id,
             snapshot.CustomerId,
-            snapshot.Description);
+            snapshot.Description,
+            snapshot.OpenedAt);
 
         entity.Number = snapshot.Number;
         entity.Status = snapshot.Status;
-        entity.OpenedAt = snapshot.OpenedAt;
+        entity.StartedAt = snapshot.StartedAt;
+        entity.FinishedAt = snapshot.FinishedAt;
         entity.Price = snapshot.Price;
         entity.Currency = Currency.Create(snapshot.CurrencyCode);
         entity.UpdatedPriceAt = snapshot.UpdatedPriceAt;
@@ -62,38 +72,35 @@ public sealed class ServiceOrderEntity
     }
 
     internal void SetNumber(int number)
-    {
-        Number = number;
-    }
+        => Number = number;
 
     public void Start()
     {
         ChangeStatus(ServiceOrderStatus.InProgress);
+        StartedAt = DateTime.UtcNow;
     }
 
     public void Finish()
     {
         if (Price is null)
-            throw new DomainException("Não é possível encerrar a ordem de serviço sem o preço.");
+            throw new DomainException(
+                "Não é possível finalizar a ordem de serviço sem o valor.");
 
         ChangeStatus(ServiceOrderStatus.Finished);
+        FinishedAt = DateTime.UtcNow;
     }
 
-    public void Cancel()
-    {
-        ChangeStatus(ServiceOrderStatus.Canceled);
-    }
-
-    public void UpdatePrice(decimal price, string currencyCode)
+    public void UpdatePrice(decimal price)
     {
         if (price < 0)
             throw new DomainException("O valor não pode ser negativo.");
 
-        if (Status is ServiceOrderStatus.Finished or ServiceOrderStatus.Canceled)
-            throw new DomainException("Não é possível alterar o preço após a ordem de serviço ser finalizada ou cancelada.");
+        if (Status.IsFinalState())
+            throw new DomainException(
+                "Não é possível alterar o valor após a finalização.");
 
         Price = price;
-        Currency = Currency.Create(currencyCode);
+        Currency = Currency.Create("BRL");
         UpdatedPriceAt = DateTime.UtcNow;
     }
 
@@ -101,7 +108,7 @@ public sealed class ServiceOrderEntity
     {
         if (!Status.CanTransitionTo(newStatus))
             throw new DomainException(
-                $"Transição de status inválida de {Status} para {newStatus}.");
+                $"Transição inválida de {Status} para {newStatus}.");
 
         Status = newStatus;
     }
@@ -111,18 +118,23 @@ public sealed class ServiceOrderEntity
         if (string.IsNullOrWhiteSpace(description))
             throw new DomainException("A descrição é obrigatória.");
 
-        if (description.Length > 500)
-            throw new DomainException("A descrição deve ter no máximo 500 caracteres.");
+        description = description.Trim();
+
+        if (description.Length is < 1 or > 500)
+            throw new DomainException(
+                "A descrição deve ter entre 1 e 500 caracteres.");
     }
 
     public sealed record Snapshot(
-    Guid Id,
-    int Number,
-    Guid CustomerId,
-    string Description,
-    ServiceOrderStatus Status,
-    DateTime OpenedAt,
-    decimal? Price,
-    string CurrencyCode,
-    DateTime? UpdatedPriceAt);
+        Guid Id,
+        int Number,
+        Guid CustomerId,
+        string Description,
+        ServiceOrderStatus Status,
+        DateTime OpenedAt,
+        DateTime? StartedAt,
+        DateTime? FinishedAt,
+        decimal? Price,
+        string CurrencyCode,
+        DateTime? UpdatedPriceAt);
 }
