@@ -61,18 +61,19 @@ public sealed class ServiceOrderEntity
             snapshot.Id,
             snapshot.CustomerId,
             snapshot.Description,
-            snapshot.OpenedAt);
+            snapshot.OpenedAt)
+        {
+            Number = snapshot.Number,
+            Status = snapshot.Status,
+            StartedAt = snapshot.StartedAt,
+            FinishedAt = snapshot.FinishedAt,
+            Price = snapshot.Price,
+            Currency = Currency.Create(snapshot.CurrencyCode),
+            UpdatedPriceAt = snapshot.UpdatedPriceAt,
 
-        entity.Number = snapshot.Number;
-        entity.Status = snapshot.Status;
-        entity.StartedAt = snapshot.StartedAt;
-        entity.FinishedAt = snapshot.FinishedAt;
-        entity.Price = snapshot.Price;
-        entity.Currency = Currency.Create(snapshot.CurrencyCode);
-        entity.UpdatedPriceAt = snapshot.UpdatedPriceAt;
-
-        entity.IsDeletedFlag = snapshot.IsDeleted;
-        entity.DeletedAt = snapshot.DeletedAt;
+            IsDeletedFlag = snapshot.IsDeleted,
+            DeletedAt = snapshot.DeletedAt
+        };
 
         return entity;
     }
