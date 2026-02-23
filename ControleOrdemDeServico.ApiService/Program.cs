@@ -4,43 +4,62 @@ using OsService.Infrastructure.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 
 builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(typeof(OsService.Services.V1.CreateCustomer.CreateCustomerCommand).Assembly));
+{
+    cfg.RegisterServicesFromAssembly(typeof(OsService.Services.V1.CreateCustomer.CreateCustomerCommand).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(OsService.Services.V1.SearchCustomer.SearchCustomerHandler).Assembly);
+});
 
 builder.Services.AddSingleton<IDefaultSqlConnectionFactory>(_ =>
     new SqlConnectionFactory(builder.Configuration.GetConnectionString("DefaultConnection")!));
 
 builder.Services.AddSingleton<IAdminSqlConnectionFactory>(_ =>
-    new SqlConnectionFactory(
-        builder.Configuration.GetConnectionString("CreateTable")!
-    ));
+    new SqlConnectionFactory(builder.Configuration.GetConnectionString("CreateTable")!)
+);
 
+builder.Services.AddScoped<CustomerRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IServiceOrderRepository, ServiceOrderRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-builder.Services.AddSingleton<DatabaseGenerator>();
-// Add services to the container.
-builder.Services.AddProblemDetails();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddSingleton<DatabaseGenerator>();
+
+builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var repository =
-        scope.ServiceProvider.GetRequiredService<DatabaseGenerator>();
-
+    var repository = scope.ServiceProvider.GetRequiredService<DatabaseGenerator>();
     await repository.EnsureCreatedAsync(CancellationToken.None);
-
 }
 
-// Configure the HTTP request pipeline.
-app.UseExceptionHandler();
+app.UseExceptionHandler(appBuilder =>
+{
+    appBuilder.Run(async context =>
+    {
+        context.Response.ContentType = "application/json";
+
+        var exceptionHandlerPathFeature =
+            context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+
+        if (exceptionHandlerPathFeature?.Error is OsService.Domain.Exceptions.DomainException domainEx)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new { error = domainEx.Message });
+        }
+        else
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            await context.Response.WriteAsJsonAsync(new { error = "Ocorreu um erro inesperado." });
+        }
+    });
+});
+
 app.MapControllers();
 
 if (app.Environment.IsDevelopment())

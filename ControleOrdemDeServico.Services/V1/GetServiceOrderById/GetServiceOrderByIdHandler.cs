@@ -4,8 +4,8 @@ using OsService.Infrastructure.Repository;
 namespace OsService.Services.V1.GetServiceOrderById
 {
     public sealed class GetServiceOrderByIdHandler(
-    IServiceOrderRepository repository)
-    : IRequestHandler<GetServiceOrderByIdQuery, ServiceOrderResponse?>
+        IServiceOrderRepository repository)
+        : IRequestHandler<GetServiceOrderByIdQuery, ServiceOrderResponse?>
     {
         public async Task<ServiceOrderResponse?> Handle(
             GetServiceOrderByIdQuery request,
@@ -23,9 +23,13 @@ namespace OsService.Services.V1.GetServiceOrderById
                 entity.Description,
                 entity.Status.ToString(),
                 entity.OpenedAt,
+                entity.StartedAt,
+                entity.FinishedAt,
                 entity.Price,
                 entity.Currency.Code,
-                entity.UpdatedPriceAt);
+                entity.UpdatedPriceAt,
+                entity.IsDeleted(),
+                entity.DeletedAt);
         }
     }
 }

@@ -6,4 +6,6 @@ public interface IServiceOrderRepository
 {
     Task InsertAsync(ServiceOrderEntity entity, CancellationToken ct);
     Task<ServiceOrderEntity?> GetByIdAsync(Guid id, CancellationToken ct);
+    Task UpdateAsync(ServiceOrderEntity entity, CancellationToken ct);
+    Task<IEnumerable<ServiceOrderEntity>> GetByCustomerIdAsync(Guid customerId, CancellationToken ct);
 }

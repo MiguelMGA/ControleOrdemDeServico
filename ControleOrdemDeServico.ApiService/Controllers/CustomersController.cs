@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OsService.Services.V1.CreateCustomer;
+using OsService.Services.V1.DeleteCustomer;
 using OsService.Services.V1.GetCustomerById;
+using OsService.Services.V1.SearchCustomer;
 
 namespace OsService.ApiService.Controllers;
 
@@ -31,5 +33,27 @@ public sealed class CustomersController(IMediator mediator) : ControllerBase
             return NotFound();
 
         return Ok(result);
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(
+        [FromQuery] string? document,
+        [FromQuery] string? phone,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(document) && string.IsNullOrWhiteSpace(phone))
+            return BadRequest("Informe pelo menos um parâmetro: document ou phone.");
+
+        var query = new SearchCustomerQuery(document?.Trim(), phone?.Trim());
+        var result = await mediator.Send(query, ct);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        await mediator.Send(new DeleteCustomerCommand(id), ct);
+        return NoContent();
     }
 }

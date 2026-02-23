@@ -12,10 +12,10 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
     {
         const string sql = @"
             INSERT INTO dbo.ServiceOrders
-                (Id, CustomerId, Description, Status, OpenedAt, Price, Coin)
+                (Id, CustomerId, Description, Status, OpenedAt, Price, Coin, IsDeleted, DeletedAt)
             OUTPUT INSERTED.Number
             VALUES
-                (@Id, @CustomerId, @Description, @Status, @OpenedAt, @Price, @Coin);";
+                (@Id, @CustomerId, @Description, @Status, @OpenedAt, @Price, @Coin, @IsDeleted, @DeletedAt);";
 
         using var conn = factory.Create();
 
@@ -28,7 +28,9 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
                 Status = (int)entity.Status,
                 entity.OpenedAt,
                 entity.Price,
-                Coin = entity.Currency.Code
+                Coin = entity.Currency.Code,
+                IsDeleted = entity.IsDeleted(),
+                DeletedAt = entity.DeletedAt
             }, cancellationToken: ct));
 
         entity.SetNumber(number);
@@ -47,7 +49,9 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
                    FinishedAt,
                    Price,
                    Coin,
-                   UpdatedPriceAt
+                   UpdatedPriceAt,
+                   IsDeleted,
+                   DeletedAt
             FROM dbo.ServiceOrders
             WHERE Id = @Id;";
 
@@ -71,7 +75,85 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
                 row.FinishedAt,
                 row.Price,
                 row.Coin,
-                row.UpdatedPriceAt
+                row.UpdatedPriceAt,
+                row.IsDeleted,
+                row.DeletedAt
             ));
+    }
+
+    public async Task UpdateAsync(ServiceOrderEntity entity, CancellationToken ct)
+    {
+        const string sql = @"
+        UPDATE dbo.ServiceOrders
+        SET Status = @Status,
+            StartedAt = @StartedAt,
+            FinishedAt = @FinishedAt,
+            Price = @Price,
+            UpdatedPriceAt = @UpdatedPriceAt,
+            IsDeleted = @IsDeleted,
+            DeletedAt = @DeletedAt
+        WHERE Id = @Id;";
+
+        using var conn = factory.Create();
+
+        await conn.ExecuteAsync(new CommandDefinition(sql, new
+        {
+            Id = entity.Id,
+            Status = (int)entity.Status,
+            entity.StartedAt,
+            entity.FinishedAt,
+            entity.Price,
+            entity.UpdatedPriceAt,
+            IsDeleted = entity.IsDeleted(),
+            DeletedAt = entity.DeletedAt
+        }, cancellationToken: ct));
+    }
+
+    public async Task<IEnumerable<ServiceOrderEntity>> GetByCustomerIdAsync(Guid customerId, CancellationToken ct)
+    {
+        const string sql = @"
+            SELECT Id,
+                   Number,
+                   CustomerId,
+                   Description,
+                   Status,
+                   OpenedAt,
+                   StartedAt,
+                   FinishedAt,
+                   Price,
+                   Coin,
+                   UpdatedPriceAt,
+                   IsDeleted,
+                   DeletedAt
+            FROM dbo.ServiceOrders
+            WHERE CustomerId = @CustomerId;";
+
+        using var conn = factory.Create();
+
+        var rows = await conn.QueryAsync(sql, new { CustomerId = customerId });
+
+        var result = new List<ServiceOrderEntity>();
+
+        foreach (var row in rows)
+        {
+            result.Add(ServiceOrderEntity.Restore(
+                new ServiceOrderEntity.Snapshot(
+                    row.Id,
+                    row.Number,
+                    row.CustomerId,
+                    row.Description,
+                    (ServiceOrderStatus)row.Status,
+                    row.OpenedAt,
+                    row.StartedAt,
+                    row.FinishedAt,
+                    row.Price,
+                    row.Coin,
+                    row.UpdatedPriceAt,
+                    row.IsDeleted,
+                    row.DeletedAt
+                )));
+        }
+
+        return result;
     }
 }

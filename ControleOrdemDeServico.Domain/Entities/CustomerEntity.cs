@@ -1,5 +1,5 @@
 ﻿using OsService.Domain.Exceptions;
-using System.Text.RegularExpressions;
+using OsService.Domain.Shared;
 
 namespace OsService.Domain.Entities;
 
@@ -11,68 +11,68 @@ public sealed class CustomerEntity
     public string? Email { get; private set; }
     public string? Document { get; private set; }
     public DateTime CreatedAt { get; }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 
-    private CustomerEntity(
-        Guid id,
-        string name,
-        string? phone,
-        string? email,
-        string? document,
-        DateTime createdAt)
+    private CustomerEntity(CustomerSnapshot snapshot)
     {
-        Id = id;
-        CreatedAt = createdAt;
-
+        Id = snapshot.Id;
         Name = string.Empty;
-        SetName(name);
-        SetPhone(phone);
-        SetEmail(email);
-        SetDocument(document);
-    }
+        SetName(snapshot.Name);
+        SetPhone(snapshot.Phone);
+        SetEmail(snapshot.Email);
+        SetDocument(snapshot.Document);
 
+        CreatedAt = snapshot.CreatedAt;
+        IsDeleted = snapshot.IsDeleted;
+        DeletedAt = snapshot.DeletedAt;
+    }
     public static CustomerEntity Create(
-        string name,
-        string? phone,
-        string? email,
-        string? document)
+    string name,
+    string? phone,
+    string? email,
+    string? document)
     {
-        return new CustomerEntity(
-            Guid.NewGuid(),
-            name,
-            phone,
-            email,
-            document,
-            DateTime.UtcNow);
+        var snapshot = new CustomerSnapshot
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Phone = phone,
+            Email = email,
+            Document = document,
+            CreatedAt = DateTime.UtcNow,
+            IsDeleted = false,
+            DeletedAt = null
+        };
+
+        return new CustomerEntity(snapshot);
     }
 
-    public static CustomerEntity Restore(
-        Guid id,
-        string name,
-        string? phone,
-        string? email,
-        string? document,
-        DateTime createdAt)
+    public static CustomerEntity Restore(CustomerSnapshot snapshot)
     {
-        return new CustomerEntity(
-            id,
-            name,
-            phone,
-            email,
-            document,
-            createdAt);
+        return new CustomerEntity(snapshot);
     }
 
-    public void UpdateName(string name)
-        => SetName(name);
+    public void UpdateName(string name) => SetName(name);
+    public void UpdatePhone(string? phone) => SetPhone(phone);
+    public void UpdateEmail(string? email) => SetEmail(email);
+    public void UpdateDocument(string? document) => SetDocument(document);
 
-    public void UpdatePhone(string? phone)
-        => SetPhone(phone);
+    public void MarkAsDeleted()
+    {
+        if (IsDeleted) return;
 
-    public void UpdateEmail(string? email)
-        => SetEmail(email);
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+    }
 
-    public void UpdateDocument(string? document)
-        => SetDocument(document);
+    public void MarkAsDeleted(DateTime? deletedAt)
+    {
+        IsDeleted = true;
+        DeletedAt = deletedAt ?? DateTime.UtcNow;
+    }
+
+    public bool IsDeletedCustomer() => IsDeleted;
 
     private void SetName(string name)
     {
@@ -116,11 +116,7 @@ public sealed class CustomerEntity
         if (email.Length > 120)
             throw new DomainException("E-mail deve ter no máximo 120 caracteres.");
 
-        var isValid = Regex.IsMatch(
-            email,
-            @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-
-        if (!isValid)
+        if (!EmailRegex.Instance().IsMatch(email))
             throw new DomainException("Formato de e-mail inválido.");
 
         Email = email;
@@ -141,4 +137,16 @@ public sealed class CustomerEntity
 
         Document = document;
     }
+}
+
+public sealed class CustomerSnapshot
+{
+    public Guid Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Phone { get; init; }
+    public string? Email { get; init; }
+    public string? Document { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public bool IsDeleted { get; init; }
+    public DateTime? DeletedAt { get; init; }
 }
