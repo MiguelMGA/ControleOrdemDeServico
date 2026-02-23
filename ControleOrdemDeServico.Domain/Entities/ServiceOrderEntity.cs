@@ -20,6 +20,9 @@ public sealed class ServiceOrderEntity
     public Currency Currency { get; private set; }
     public DateTime? UpdatedPriceAt { get; private set; }
 
+    public bool IsDeletedFlag { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
+
     private ServiceOrderEntity(
         Guid id,
         Guid customerId,
@@ -68,6 +71,9 @@ public sealed class ServiceOrderEntity
         entity.Currency = Currency.Create(snapshot.CurrencyCode);
         entity.UpdatedPriceAt = snapshot.UpdatedPriceAt;
 
+        entity.IsDeletedFlag = snapshot.IsDeleted;
+        entity.DeletedAt = snapshot.DeletedAt;
+
         return entity;
     }
 
@@ -104,6 +110,16 @@ public sealed class ServiceOrderEntity
         UpdatedPriceAt = DateTime.UtcNow;
     }
 
+    public void MarkAsDeleted()
+    {
+        if (IsDeletedFlag) return;
+
+        IsDeletedFlag = true;
+        DeletedAt = DateTime.UtcNow;
+    }
+
+    public bool IsDeleted() => IsDeletedFlag;
+
     private void ChangeStatus(ServiceOrderStatus newStatus)
     {
         if (!Status.CanTransitionTo(newStatus))
@@ -136,5 +152,7 @@ public sealed class ServiceOrderEntity
         DateTime? FinishedAt,
         decimal? Price,
         string CurrencyCode,
-        DateTime? UpdatedPriceAt);
+        DateTime? UpdatedPriceAt,
+        bool IsDeleted,
+        DateTime? DeletedAt);
 }

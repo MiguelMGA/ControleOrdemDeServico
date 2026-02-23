@@ -61,7 +61,7 @@ BEGIN
     CREATE INDEX IX_ServiceOrders_IsDeleted ON dbo.ServiceOrders(IsDeleted);
 END;
 
--- AuditLogs (novo)
+-- AuditLogs
 IF OBJECT_ID(N'dbo.AuditLogs', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.AuditLogs (

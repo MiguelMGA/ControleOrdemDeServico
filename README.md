@@ -45,7 +45,7 @@ Permitir registrar e consultar dados do cliente para vinculação em Ordens de Ser
 - Buscar cliente por telefone ou documento
 
 #### Casos de Teste
-- Criar cliente com nome válido retorna  id
+- Criar cliente com nome válido retorna id
 - Criar cliente sem nome retorna 400 Validation Error
 
 ---
