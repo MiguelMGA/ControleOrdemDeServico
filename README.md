@@ -255,7 +255,17 @@ DB_NAME → nome do banco de dados a ser utilizado
 
 ---
 
-## 7. Próximos Passos (Evolução do Sistema)
+## 7. Funcionalidades Não Implementadas
+
+Por limitação de tempo, algumas funcionalidades previstas no sistema não foram implementadas:
+
+Anexar fotos de antes/depois do serviço nas Ordens de Serviço.
+
+Esta funcionalidade está documentada e planejada, podendo ser adicionada em futuras versões do sistema, especialmente quando um Front-end for desenvolvido.
+
+---
+
+## 8. Próximos Passos (Evolução do Sistema)
 
 Como evolução natural do projeto, o próximo passo seria o desenvolvimento de um **Front-end** para consumo da API.
 
@@ -278,7 +288,7 @@ A ausência do front-end neste desafio ocorreu exclusivamente por limitação de
 
 ---
 
-## 8. Conformidade com as Instruções do Desafio
+## 9. Conformidade com as Instruções do Desafio
 
 ✔ Código compila sem erros  
 ✔ Sem warnings (verificado com SonarLint)  
