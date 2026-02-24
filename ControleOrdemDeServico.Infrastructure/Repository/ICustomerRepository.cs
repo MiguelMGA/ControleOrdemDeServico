@@ -16,4 +16,6 @@ public interface ICustomerRepository
 
     // Pesquisa de clientes
     Task<IEnumerable<CustomerEntity>> SearchAsync(string? document, string? phone, CancellationToken ct);
+    Task<IEnumerable<CustomerEntity>> GetAllAsync(CancellationToken ct);
+    Task<IEnumerable<CustomerEntity>> GetAllIncludingDeletedAsync(CancellationToken ct);
 }
