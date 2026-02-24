@@ -99,6 +99,9 @@ public sealed class ServiceOrderEntity
 
     public void UpdatePrice(decimal price)
     {
+        if (IsDeleted())
+            throw new DomainException("Não é possível alterar o preço de uma ordem de serviço excluída.");
+
         if (price < 0)
             throw new DomainException("O valor não pode ser negativo.");
 
@@ -123,6 +126,10 @@ public sealed class ServiceOrderEntity
 
     private void ChangeStatus(ServiceOrderStatus newStatus)
     {
+        if (IsDeleted())
+            throw new DomainException(
+                "Não é possível alterar o status de uma ordem de serviço excluída.");
+
         if (!Status.CanTransitionTo(newStatus))
             throw new DomainException(
                 $"Transição inválida de {Status} para {newStatus}.");

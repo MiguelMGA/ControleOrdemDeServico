@@ -27,15 +27,54 @@ builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddSingleton<DatabaseGenerator>();
 
 builder.Services.AddProblemDetails();
-builder.Services.AddOpenApi();
-builder.Services.AddControllers();
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new()
+    {
+        Title = "OsService API",
+        Version = "v1",
+        Description = "API para controle de ordens de serviço",
+        Contact = new()
+        {
+            Name = "Miguel Aguiar",
+            Email = "miguel.aguiar@ivoryit.com.br"
+        }
+    });
+
+    var basePath = AppContext.BaseDirectory;
+
+    var xmlFiles = Directory.GetFiles(basePath, "*.xml", SearchOption.TopDirectoryOnly);
+
+    foreach (var xmlFile in xmlFiles)
+    {
+        options.IncludeXmlComments(xmlFile);
+    }
+});
 
 var app = builder.Build();
 
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "OsService API v1");
+    c.RoutePrefix = "swagger";
+});
+
 using (var scope = app.Services.CreateScope())
 {
-    var repository = scope.ServiceProvider.GetRequiredService<DatabaseGenerator>();
-    await repository.EnsureCreatedAsync(CancellationToken.None);
+    var databaseGenerator = scope.ServiceProvider.GetRequiredService<DatabaseGenerator>();
+    await databaseGenerator.EnsureCreatedAsync(CancellationToken.None);
 }
 
 app.UseExceptionHandler(appBuilder =>
@@ -47,47 +86,32 @@ app.UseExceptionHandler(appBuilder =>
         var exceptionHandlerPathFeature =
             context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
 
-        if (exceptionHandlerPathFeature?.Error is OsService.Domain.Exceptions.DomainException domainEx)
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        switch (exception)
         {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(new { error = domainEx.Message });
-        }
-        else
-        {
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(new { error = "Ocorreu um erro inesperado." });
+            case OsService.Domain.Exceptions.NotFoundException notFoundEx:
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsJsonAsync(new { error = notFoundEx.Message });
+                break;
+
+            case OsService.Domain.Exceptions.DomainException domainEx:
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsJsonAsync(new { error = domainEx.Message });
+                break;
+
+            default:
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await context.Response.WriteAsJsonAsync(new { error = "Ocorreu um erro inesperado." });
+                break;
         }
     });
 });
 
+app.UseHttpsRedirection();
+
 app.MapControllers();
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
 
 app.MapDefaultEndpoints();
 
 await app.RunAsync();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

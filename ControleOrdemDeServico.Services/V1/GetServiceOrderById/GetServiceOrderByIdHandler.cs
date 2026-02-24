@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using OsService.Domain.Exceptions;
 using OsService.Infrastructure.Repository;
 
 namespace OsService.Services.V1.GetServiceOrderById
@@ -14,7 +15,7 @@ namespace OsService.Services.V1.GetServiceOrderById
             var entity = await repository.GetByIdAsync(request.Id, cancellationToken);
 
             if (entity is null)
-                return null;
+                throw new NotFoundException("Ordem de Serviço não encontrada.");
 
             return new ServiceOrderResponse(
                 entity.Id,

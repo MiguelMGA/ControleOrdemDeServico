@@ -40,7 +40,8 @@ public sealed class CustomerRepository(IDefaultSqlConnectionFactory factory)
                IsDeleted,
                DeletedAt
         FROM dbo.Customers
-        WHERE Id = @Id;";
+        WHERE Id = @Id
+          AND IsDeleted = 0;";
 
         using var conn = factory.Create();
         var row = await conn.QuerySingleOrDefaultAsync(
@@ -60,8 +61,7 @@ public sealed class CustomerRepository(IDefaultSqlConnectionFactory factory)
             DeletedAt = row.DeletedAt
         };
 
-        var entity = CustomerEntity.Restore(snapshot);
-        return entity;
+        return CustomerEntity.Restore(snapshot);
     }
 
     public async Task UpdateAsync(CustomerEntity customer, CancellationToken ct)
@@ -167,5 +167,70 @@ public sealed class CustomerRepository(IDefaultSqlConnectionFactory factory)
         }
 
         return result;
+    }
+
+    public async Task<IEnumerable<CustomerEntity>> GetAllAsync(CancellationToken ct)
+    {
+        const string sql = @"
+        SELECT Id,
+               Name,
+               Phone,
+               Email,
+               Document,
+               CreatedAt,
+               IsDeleted,
+               DeletedAt
+        FROM dbo.Customers
+        WHERE IsDeleted = 0;";
+
+        using var conn = factory.Create();
+
+        var rows = await conn.QueryAsync(
+            new CommandDefinition(sql, cancellationToken: ct));
+
+        return rows.Select(row =>
+            CustomerEntity.Restore(new CustomerSnapshot
+            {
+                Id = row.Id,
+                Name = row.Name,
+                Phone = row.Phone,
+                Email = row.Email,
+                Document = row.Document,
+                CreatedAt = row.CreatedAt,
+                IsDeleted = row.IsDeleted,
+                DeletedAt = row.DeletedAt
+            }));
+    }
+
+    public async Task<IEnumerable<CustomerEntity>> GetAllIncludingDeletedAsync(CancellationToken ct)
+    {
+        const string sql = @"
+        SELECT Id,
+               Name,
+               Phone,
+               Email,
+               Document,
+               CreatedAt,
+               IsDeleted,
+               DeletedAt
+        FROM dbo.Customers;";
+
+        using var conn = factory.Create();
+
+        var rows = await conn.QueryAsync(
+            new CommandDefinition(sql, cancellationToken: ct));
+
+        return rows.Select(row =>
+            CustomerEntity.Restore(new CustomerSnapshot
+            {
+                Id = row.Id,
+                Name = row.Name,
+                Phone = row.Phone,
+                Email = row.Email,
+                Document = row.Document,
+                CreatedAt = row.CreatedAt,
+                IsDeleted = row.IsDeleted,
+                DeletedAt = row.DeletedAt
+            }));
     }
 }

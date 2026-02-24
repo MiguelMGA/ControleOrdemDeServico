@@ -1,19 +1,19 @@
-# InstruÁıes
+Ôªø# Instru√ß√µes
 
-- Caso o tempo n„o seja suficiente, priorize a **qualidade, o padr„o e a estrutura do cÛdigo**, definindo claramente quais funcionalidades n„o ser„o implementadas.
-- Caso alguma funcionalidade n„o seja implementada, isso **deve ser documentado neste README**, explicando o motivo.
-- O cÛdigo fornecido contÈm **"problemas" que devem ser identificados e corrigidos**.
-- Fique a vontade para criar, renomear e remover pastas,bibliotecas e atÈ a soluÁ„o n„o utilizadas.
-- O sistema deve **compilar corretamente e executar todas as aÁıes previstas**.
-- O cÛdigo final **n„o deve apresentar erros nem warnings** durante a compilaÁ„o.
-- Deve ser enviado via e-mail para consultoria com o link do projeto no Github. A consultaoria ter· atÈ terÁa-feira dia 13 as as 13 horas para encaminhar o e-mail.
-- Utilize a extens„o do SonarLint para verificar os problemas.
+- Caso o tempo n√£o seja suficiente, priorize a **qualidade, o padr√£o e a estrutura do c√≥digo**, definindo claramente quais funcionalidades n√£o ser√£o implementadas.
+- Caso alguma funcionalidade n√£o seja implementada, isso **deve ser documentado neste README**, explicando o motivo.
+- O c√≥digo fornecido cont√©m **"problemas" que devem ser identificados e corrigidos**.
+- Fique a vontade para criar, renomear e remover pastas,bibliotecas e at√© a solu√ß√£o n√£o utilizadas.
+- O sistema deve **compilar corretamente e executar todas as a√ß√µes previstas**.
+- O c√≥digo final **n√£o deve apresentar erros nem warnings** durante a compila√ß√£o.
+- Deve ser enviado via e-mail para consultoria com o link do projeto no Github. A consultaoria ter√° at√© ter√ßa-feira dia 13 as as 13 horas para encaminhar o e-mail.
+- Utilize a extens√£o do SonarLint para verificar os problemas.
 - Monte os testes de unidade
 ---
 
-## 1. IntroduÁ„o
+## 1. Introdu√ß√£o
 
-Sistema para um prestador de serviÁos (ou pequena equipe) registrar clientes, abrir ordens de serviÁo, acompanhar status, registrar valores e anexar fotos de antes/depois do serviÁo.
+Sistema para um prestador de servi√ßos (ou pequena equipe) registrar clientes, abrir ordens de servi√ßo, acompanhar status, registrar valores e anexar fotos de antes/depois do servi√ßo.
 
 ---
 
@@ -22,60 +22,60 @@ Sistema para um prestador de serviÁos (ou pequena equipe) registrar clientes, ab
 ### 2.1 Cadastro de Cliente
 
 #### Objetivo
-Permitir registrar e consultar dados do cliente para vinculaÁ„o em Ordens de ServiÁo (OS).
+Permitir registrar e consultar dados do cliente para vincula√ß√£o em Ordens de Servi√ßo (OS).
 
-#### Campos (mÌnimo)
-- Nome (obrigatÛrio, 2ñ150 caracteres)
+#### Campos (m√≠nimo)
+- Nome (obrigat√≥rio, 2‚Äì150 caracteres)
 - Id (gerado pelo sistema)
-- Telefone (opcional, atÈ 30 caracteres)
-- E-mail (opcional, atÈ 120 caracteres, formato v·lido)
-- Documento (CPF/CNPJ) (opcional, atÈ 30 caracteres, sem validaÁ„o pesada)
-- Data de criaÁ„o (gerado pelo sistema)
+- Telefone (opcional, at√© 30 caracteres)
+- E-mail (opcional, at√© 120 caracteres, formato v√°lido)
+- Documento (CPF/CNPJ) (opcional, at√© 30 caracteres, sem valida√ß√£o pesada)
+- Data de cria√ß√£o (gerado pelo sistema)
 
-#### Regras de NegÛcio
-1. Nome È obrigatÛrio e n„o pode conter apenas whitespace.
+#### Regras de Neg√≥cio
+1. Nome √© obrigat√≥rio e n√£o pode conter apenas whitespace.
 2. Telefone e e-mail podem ser nulos; se informados, devem ser trimados.
 3. Opcionalmente, bloquear ou alertar duplicidade por:
    - Documento (CPF/CNPJ), quando informado
    - Telefone, quando informado
 
-#### OperaÁıes
+#### Opera√ß√µes
 - Criar cliente
 - Consultar cliente por Id
 - Buscar cliente por telefone ou documento
 
 #### Casos de Teste
-- Criar cliente com nome v·lido retorna id
+- Criar cliente com nome v√°lido retorna id
 - Criar cliente sem nome retorna 400 Validation Error
 
 ---
 
-### 2.2 Abertura de Ordem de ServiÁo
+### 2.2 Abertura de Ordem de Servi√ßo
 
 #### Objetivo
-Criar uma OS vinculada a um cliente, com descriÁ„o e dados iniciais.
+Criar uma OS vinculada a um cliente, com descri√ß√£o e dados iniciais.
 
-#### Campos (mÌnimo)
-- ClienteId (obrigatÛrio)
-- DescriÁ„o do serviÁo (obrigatÛrio, 1ñ500 caracteres)
-- N˙mero da OS (gerado automaticamente, sequencial/identity)
+#### Campos (m√≠nimo)
+- ClienteId (obrigat√≥rio)
+- Descri√ß√£o do servi√ßo (obrigat√≥rio, 1‚Äì500 caracteres)
+- N√∫mero da OS (gerado automaticamente, sequencial/identity)
 - Status (inicial = Aberta)
 - Data de abertura (gerado pelo sistema)
-- Valor do serviÁo (decimal(18,2)) (opcional no momento da abertura)
+- Valor do servi√ßo (decimal(18,2)) (opcional no momento da abertura)
 - Moeda (BRL)
-- Data de atualizaÁ„o valor (opcional)
+- Data de atualiza√ß√£o valor (opcional)
 
-#### Regras de NegÛcio
-1. SÛ È possÌvel abrir OS para cliente existente.
-2. DescriÁ„o È obrigatÛria.
+#### Regras de Neg√≥cio
+1. S√≥ √© poss√≠vel abrir OS para cliente existente.
+2. Descri√ß√£o √© obrigat√≥ria.
 3. Status inicial deve ser sempre Aberta.
-4. N˙mero da OS deve ser ˙nico e sequencial.
-5. Regra de negÛcio item 2.4 
+4. N√∫mero da OS deve ser √∫nico e sequencial.
+5. Regra de neg√≥cio item 2.4 
 
-#### OperaÁıes
+#### Opera√ß√µes
 - Abrir OS
 - Consultar OS por Id
-- Listar OS por cliente, status ou perÌodo
+- Listar OS por cliente, status ou per√≠odo
 
 #### Casos de Teste
 - Abrir OS para cliente existente
@@ -83,52 +83,52 @@ Criar uma OS vinculada a um cliente, com descriÁ„o e dados iniciais.
 
 ---
 
-### 2.3 Status da Ordem de ServiÁo
+### 2.3 Status da Ordem de Servi√ßo
 
 #### Objetivo
-Permitir acompanhar o ciclo do serviÁo.
+Permitir acompanhar o ciclo do servi√ßo.
 
 #### Estados
 - Aberta
-- Em ExecuÁ„o
+- Em Execu√ß√£o
 - Finalizada
 
-#### Regras de TransiÁ„o
-- Aberta -> Em ExecuÁ„o (permitido)
-- Em ExecuÁ„o -> Finalizada (permitido)
+#### Regras de Transi√ß√£o
+- Aberta -> Em Execu√ß√£o (permitido)
+- Em Execu√ß√£o -> Finalizada (permitido)
 - Aberta -> Finalizada (bloqueado)
 - Finalizada -> qualquer outro (bloqueado)
 
-#### OperaÁıes
+#### Opera√ß√µes
 - Alterar status
 - Registrar datas opcionais:
-  - StartedAt ao entrar em Em ExecuÁ„o
+  - StartedAt ao entrar em Em Execu√ß√£o
   - FinishedAt ao entrar em Finalizada
 
 #### Casos de Teste
-- Alterar Aberta para Em ExecuÁ„o retorna sucesso
-- Alterar Em ExecuÁ„o para Finalizada retorna sucesso
+- Alterar Aberta para Em Execu√ß√£o retorna sucesso
+- Alterar Em Execu√ß√£o para Finalizada retorna sucesso
 - Alterar Finalizada para outro status retorna erro
 
 ---
 
-### 2.4 Valor do ServiÁo
+### 2.4 Valor do Servi√ßo
 
 #### Objetivo
-Permitir definir ou ajustar o valor do serviÁo.
+Permitir definir ou ajustar o valor do servi√ßo.
 
 #### Campos
 - Valor (decimal(18,2))
 - Moeda (BRL)
-- Data de atualizaÁ„o (opcional)
+- Data de atualiza√ß√£o (opcional)
 
-#### Regras de NegÛcio
-1. Valor pode ser nulo enquanto Aberta ou Em ExecuÁ„o.
-2. Valor pode ser obrigatÛrio para finalizar a OS.
-3. Valor n„o pode ser negativo.
-4. ApÛs Finalizada, n„o permitir alteraÁ„o.
+#### Regras de Neg√≥cio
+1. Valor pode ser nulo enquanto Aberta ou Em Execu√ß√£o.
+2. Valor pode ser obrigat√≥rio para finalizar a OS.
+3. Valor n√£o pode ser negativo.
+4. Ap√≥s Finalizada, n√£o permitir altera√ß√£o.
 
-#### OperaÁıes
+#### Opera√ß√µes
 - Definir ou alterar valor
 - Validar valor ao finalizar OS
 
@@ -140,14 +140,121 @@ Permitir definir ou ajustar o valor do serviÁo.
 - POST /v1/customers
 - GET /v1/customers/{id}
 
-### Ordens de ServiÁo
+### Ordens de Servi√ßo
 - POST /v1/service-orders
 - GET /v1/service-orders/{id}
 - PATCH /v1/service-orders/{id}/status
 - PUT /v1/service-orders/{id}/price
 ---
 
-## 4. Requisitos N„o Funcionais (Opcional)
+## 4. Requisitos N√£o Funcionais (Opcional)
 
 ### Observabilidade
-- Registrar logs para criaÁ„o de cliente, abertura de OS e mudanÁa de status.
+- Registrar logs para cria√ß√£o de cliente, abertura de OS e mudan√ßa de status.
+---
+
+# 5. B√¥nus Implementados
+
+## 5.1 Exclus√£o L√≥gica (Soft Delete)
+
+Foi implementada exclus√£o l√≥gica para as entidades:
+
+- **Customer**
+- **ServiceOrder**
+
+### Estrat√©gia Utilizada
+
+Ao inv√©s de remover fisicamente os registros do banco de dados, foi adotada a abordagem de **Soft Delete**, onde:
+
+- Um campo booleano `IsDeleted` foi adicionado √†s entidades.
+- A opera√ß√£o HTTP `DELETE` altera `IsDeleted = true`.
+- Registros exclu√≠dos n√£o s√£o retornados nas consultas padr√£o.
+- A integridade hist√≥rica dos dados √© preservada.
+
+### Regras Aplicadas
+
+#### Customer
+- N√£o √© removido fisicamente do banco.
+- N√£o pode ser consultado ap√≥s exclus√£o nas rotas padr√£o.
+- **Ao excluir um Customer, todas as suas ServiceOrders tamb√©m s√£o marcadas como exclu√≠das (exclus√£o l√≥gica em cascata).**
+
+#### ServiceOrder
+- N√£o √© removida fisicamente do banco.
+- N√£o pode sofrer altera√ß√µes ap√≥s exclus√£o l√≥gica.
+- N√£o aparece nas listagens padr√£o de ativos.
+
+---
+
+## 5.2 Novas Rotas GET (Listagem)
+
+Foram criadas duas rotas de listagem tanto para **Customer** quanto para **ServiceOrder**:
+
+### 1Ô∏è Listar apenas registros ativos
+Retorna apenas registros onde `IsDeleted = false`.
+
+### 2Ô∏è Listar todos os registros
+Retorna todos os registros, incluindo os exclu√≠dos logicamente.
+
+Essa separa√ß√£o permite:
+
+- Seguran√ßa na consulta padr√£o
+- Auditoria administrativa quando necess√°rio
+- Preserva√ß√£o do hist√≥rico de dados
+
+---
+
+## 5.3 Documenta√ß√£o da API com Swagger
+
+Foi implementada documenta√ß√£o autom√°tica da API utilizando **Swagger / OpenAPI**.
+
+A documenta√ß√£o permite:
+
+- Visualizar todos os endpoints dispon√≠veis
+- Testar requisi√ß√µes diretamente pelo navegador
+- Verificar contratos de entrada e sa√≠da
+- Conferir c√≥digos de retorno HTTP
+
+### Acesso Local
+
+Para acessar a documenta√ß√£o, utilize:
+
+http://localhost:<PORTA>/swagger
+
+A `<PORTA>` deve ser substitu√≠da pela porta configurada na sua m√°quina (definida no `docker-compose` ou `launchSettings.json`).
+
+---
+
+## 6. Pr√≥ximos Passos (Evolu√ß√£o do Sistema)
+
+Como evolu√ß√£o natural do projeto, o pr√≥ximo passo seria o desenvolvimento de um **Front-end** para consumo da API.
+
+Isso permitiria:
+
+- Visualiza√ß√£o completa do fluxo de neg√≥cio
+- Interface para abertura e acompanhamento de Ordens de Servi√ßo
+- Melhor experi√™ncia de usu√°rio
+- Valida√ß√µes adicionais no lado do cliente
+- Demonstra√ß√£o clara da vis√£o de produto
+
+A aus√™ncia do front-end neste desafio ocorreu exclusivamente por limita√ß√£o de tempo, priorizando:
+
+- Arquitetura
+- Qualidade do c√≥digo
+- Regras de neg√≥cio
+- Testes de unidade
+- Corre√ß√µes estruturais
+- Documenta√ß√£o
+
+---
+
+## 7. Conformidade com as Instru√ß√µes do Desafio
+
+‚úî C√≥digo compila sem erros  
+‚úî Sem warnings (verificado com SonarLint)  
+‚úî Testes de unidade implementados  
+‚úî Problemas estruturais identificados e corrigidos  
+‚úî Exclus√£o l√≥gica implementada com regra de cascata  
+‚úî Rotas adicionais de listagem criadas  
+‚úî Documenta√ß√£o Swagger implementada  
+‚úî Logs aplicados nas opera√ß√µes cr√≠ticas  
+‚úî Estrutura organizada por camadas (Domain, Services, Infrastructure, API)  
