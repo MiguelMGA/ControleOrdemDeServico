@@ -224,7 +224,38 @@ A `<PORTA>` deve ser substituída pela porta configurada na sua máquina (defini
 
 ---
 
-## 6. Próximos Passos (Evolução do Sistema)
+## 6. Configuração de Ambiente
+
+### 6.1 Variáveis de Ambiente (.env)
+
+O projeto utiliza variáveis de ambiente para configuração de conexão com banco de dados, porta e outras informações sensíveis.
+
+#### Instruções
+
+1. Existe um arquivo de exemplo: `.env.example`
+2. Para o projeto rodar corretamente, copie este arquivo e renomeie para `.env`:
+
+cp .env.example .env
+
+ou manualmente crie .env baseado no .env.example.
+
+3. Ajuste os valores das variáveis conforme o seu ambiente local. O arquivo .env deve conter pelo menos:
+
+SA_PASSWORD=SqlServer2024!Strong#
+DB_HOST=sqlserver,1433
+DB_NAME=OsServiceDb
+
+Sem o arquivo .env corretamente configurado, a aplicação não irá iniciar.
+
+SA_PASSWORD → senha do SQL Server
+
+DB_HOST → host e porta do SQL Server (ex.: sqlserver,1433)
+
+DB_NAME → nome do banco de dados a ser utilizado
+
+---
+
+## 7. Próximos Passos (Evolução do Sistema)
 
 Como evolução natural do projeto, o próximo passo seria o desenvolvimento de um **Front-end** para consumo da API.
 
@@ -247,7 +278,7 @@ A ausência do front-end neste desafio ocorreu exclusivamente por limitação de
 
 ---
 
-## 7. Conformidade com as Instruções do Desafio
+## 8. Conformidade com as Instruções do Desafio
 
 ✔ Código compila sem erros  
 ✔ Sem warnings (verificado com SonarLint)  
