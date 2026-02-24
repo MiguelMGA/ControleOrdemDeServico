@@ -30,7 +30,7 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
                 entity.Price,
                 Coin = entity.Currency.Code,
                 IsDeleted = entity.IsDeleted(),
-                DeletedAt = entity.DeletedAt
+                entity.DeletedAt
             }, cancellationToken: ct));
 
         entity.SetNumber(number);
@@ -39,21 +39,22 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
     public async Task<ServiceOrderEntity?> GetByIdAsync(Guid id, CancellationToken ct)
     {
         const string sql = @"
-            SELECT Id,
-                   Number,
-                   CustomerId,
-                   Description,
-                   Status,
-                   OpenedAt,
-                   StartedAt,
-                   FinishedAt,
-                   Price,
-                   Coin,
-                   UpdatedPriceAt,
-                   IsDeleted,
-                   DeletedAt
-            FROM dbo.ServiceOrders
-            WHERE Id = @Id;";
+        SELECT Id,
+               Number,
+               CustomerId,
+               Description,
+               Status,
+               OpenedAt,
+               StartedAt,
+               FinishedAt,
+               Price,
+               Coin,
+               UpdatedPriceAt,
+               IsDeleted,
+               DeletedAt
+        FROM dbo.ServiceOrders
+        WHERE Id = @Id
+          AND IsDeleted = 0;";
 
         using var conn = factory.Create();
 
@@ -98,14 +99,14 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
 
         await conn.ExecuteAsync(new CommandDefinition(sql, new
         {
-            Id = entity.Id,
+            entity.Id,
             Status = (int)entity.Status,
             entity.StartedAt,
             entity.FinishedAt,
             entity.Price,
             entity.UpdatedPriceAt,
             IsDeleted = entity.IsDeleted(),
-            DeletedAt = entity.DeletedAt
+            entity.DeletedAt
         }, cancellationToken: ct));
     }
 
@@ -155,5 +156,84 @@ public sealed class ServiceOrderRepository(IDefaultSqlConnectionFactory factory)
         }
 
         return result;
+    }
+
+    public async Task<IEnumerable<ServiceOrderEntity>> GetAllAsync(
+    Guid? customerId,
+    CancellationToken ct)
+    {
+        const string sql = @"
+        SELECT Id,
+               Number,
+               CustomerId,
+               Description,
+               Status,
+               OpenedAt,
+               StartedAt,
+               FinishedAt,
+               Price,
+               Coin,
+               UpdatedPriceAt,
+               IsDeleted,
+               DeletedAt
+        FROM dbo.ServiceOrders
+        WHERE IsDeleted = 0
+          AND (@CustomerId IS NULL OR CustomerId = @CustomerId);";
+
+        using var conn = factory.Create();
+
+        var rows = await conn.QueryAsync(
+            new CommandDefinition(sql, new { CustomerId = customerId }, cancellationToken: ct));
+
+        return rows.Select(Map);
+    }
+
+    public async Task<IEnumerable<ServiceOrderEntity>> GetAllIncludingDeletedAsync(
+    Guid? customerId,
+    CancellationToken ct)
+    {
+        const string sql = @"
+        SELECT Id,
+               Number,
+               CustomerId,
+               Description,
+               Status,
+               OpenedAt,
+               StartedAt,
+               FinishedAt,
+               Price,
+               Coin,
+               UpdatedPriceAt,
+               IsDeleted,
+               DeletedAt
+        FROM dbo.ServiceOrders
+        WHERE (@CustomerId IS NULL OR CustomerId = @CustomerId);";
+
+        using var conn = factory.Create();
+
+        var rows = await conn.QueryAsync(
+            new CommandDefinition(sql, new { CustomerId = customerId }, cancellationToken: ct));
+
+        return rows.Select(Map);
+    }
+
+    private static ServiceOrderEntity Map(dynamic row)
+    {
+        return ServiceOrderEntity.Restore(
+            new ServiceOrderEntity.Snapshot(
+                row.Id,
+                row.Number,
+                row.CustomerId,
+                row.Description,
+                (ServiceOrderStatus)row.Status,
+                row.OpenedAt,
+                row.StartedAt,
+                row.FinishedAt,
+                row.Price,
+                row.Coin,
+                row.UpdatedPriceAt,
+                row.IsDeleted,
+                row.DeletedAt
+            ));
     }
 }

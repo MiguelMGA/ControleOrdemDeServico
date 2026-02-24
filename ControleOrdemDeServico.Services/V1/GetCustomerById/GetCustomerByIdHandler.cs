@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using OsService.Domain.Exceptions;
 using OsService.Infrastructure.Repository;
 
 namespace OsService.Services.V1.GetCustomerById
@@ -14,7 +15,7 @@ namespace OsService.Services.V1.GetCustomerById
             var customer = await repository.GetByIdAsync(request.Id, cancellationToken);
 
             if (customer is null)
-                return null;
+                throw new NotFoundException("Cliente não encontrado.");
 
             return new CustomerResponse(
                 customer.Id,
